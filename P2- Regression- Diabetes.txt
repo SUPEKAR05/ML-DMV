@@ -1,0 +1,53 @@
+import pandas as pd
+import numpy as np
+from scipy import stats as st
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+data =pd.read_csv("diabetes.csv")
+
+data.head()
+data.shape
+print(data['Glucose'].value_counts())
+
+data.describe()
+data.mean()
+st.mode(data)
+st.skew(data)
+st.kurtosis(data)
+np.var(data)
+
+
+from sklearn.linear_model import LinearRegression 
+from sklearn.model_selection import train_test_split
+x = data.drop('Outcome',axis=1)
+y= data['Outcome']
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.3,random_state=1)
+lr = LinearRegression()
+temp = lr.fit(x_train,y_train)
+lr.score(x_test,y_test)
+
+from sklearn.linear_model import LogisticRegression 
+from sklearn.model_selection import train_test_split
+x = data.drop('Outcome',axis=1)
+y= data['Outcome']
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.3,random_state=1)
+lor = LogisticRegression()
+temp = lor.fit(x_train,y_train)
+lor.score(x_test,y_test)
+
+from sklearn.metrics import classification_report
+preds = lor.predict(x_test)
+print(classification_report(y_test,preds))
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.bar(0,y.value_counts()[0],label="NO")
+plt.bar(1,y.value_counts()[1],label="YES")
+plt.legend()
+plt.xticks([0,1]);
+
+#Multivariatr Analysis (PAIR PLOT)
+sns.pairplot(data, hue='Outcome', diag_kind='kde', palette='coolwarm')
+plt.suptitle('Pair Plot', y=1.02, fontsize=16)
+plt.show()

@@ -1,0 +1,52 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Load the dataset
+df = pd.read_csv("Telco-Customer-Churn.csv")
+
+# View the first few rows and get dataset info
+print("First 5 Rows of Data:\n", df.head())
+print("\nDataset Information:\n", df.info())
+print("\nDescriptive Statistics:\n", df.describe())
+
+
+# Handle missing values by filling NaNs with 0
+df.fillna(0, inplace=True)
+
+# Remove duplicate rows
+df.drop_duplicates(inplace=True)
+
+# Standardize 'Gender' column to lowercase
+df['Gender'] = df['gender'].str.lower()
+
+# Convert 'Total Charges' to numeric, with invalid parsing set as NaN (then filled with 0 above)
+df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+
+# Remove outliers from 'TotalCharges' using Z-score method
+z_scores = (df['TotalCharges'] - df['TotalCharges'].mean()) / df['TotalCharges'].std()
+df = df[(z_scores.abs() < 3)]
+
+
+# Make a full copy of df to avoid SettingWithCopyWarning
+df = df.copy()
+
+# Now add the new column with no warnings
+df.loc[:, 'TenureinDays'] = df['tenure'] * 30
+
+
+# Initialize the StandardScaler to normalize data
+scaler = StandardScaler()
+# Apply scaling to selected columns
+df[['MonthlyCharge', 'TotalCharges', 'TenureinDays']] = scaler.fit_transform(df[['MonthlyCharges', 'TotalCharges', 'TenureinDays']])
+
+# Split data into features (X) and target (y)
+X = df.drop('Churn', axis=1)
+y = df['Churn']
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Export the cleaned and processed dataset to a new CSV file
+df.to_csv("Cleaned_Telecom_Customer_Churn.csv", index=False)
+print("\nCleaned dataset saved as 'Cleaned_Telecom_Customer_Churn.csv'")

@@ -1,0 +1,101 @@
+pip install openpyxl
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import json
+
+# Load CSV data
+csv_data = pd.read_csv('customers.csv')
+
+# Load Excel data
+excel_data = pd.read_excel('customers.xlsx', engine='openpyxl')   #openpyxl supports new excel formats
+
+# Load JSON data
+with open('customers.json', 'r') as json_file:
+    json_data = json.load(json_file)
+json_data = pd.DataFrame(json_data)
+
+csv_data
+
+# Explore the structure and content of the loaded data
+# Identify missing values and data quality issues
+
+print("Structure and Info of CSV Data:")
+print(csv_data.info())
+print("\nMissing Values in CSV Data:")
+print(csv_data.isnull().sum())
+
+print("\nStructure and Info of Excel Data:")
+print(excel_data.info())
+print("\nMissing Values in Excel Data:")
+print(excel_data.isnull().sum())
+
+print("\nStructure and Info of JSON Data:")
+print(json_data.info())
+print("\nMissing Values in JSON Data:")
+print(json_data.isnull().sum())
+
+
+# Handling missing values
+
+csv_data.fillna(0, inplace=True)       #replace missing with 0
+excel_data.fillna(0, inplace=True)    #replace missing with 0
+json_data.fillna(0, inplace=True)     #replace missing with 0
+
+csv_data.drop_duplicates(inplace=True) #remove duplicates from all columns
+excel_data.drop_duplicates(subset=['first_name', 'last_name'], inplace=True) #remove duplicates from ["first_name", "last_name"]
+json_data.drop_duplicates(subset=['first_name', 'last_name'], inplace=True) #remove duplicates from ["first_name", "last_name"]
+
+# Print the cleaned data
+
+# Merge the datasets
+common_df = pd.concat([csv_data, excel_data, json_data], ignore_index=True)
+
+# Split a column and create new variables
+common_df['phone_area_code'] = common_df['phone'].str.extract(r'(\d+)')
+# Derive a new variable
+common_df['full_name'] = common_df['first_name'] + " " + common_df['last_name']
+
+# Print the transformed DataFrame
+common_df
+
+# Perform descriptive statistics
+desc_stats = common_df.describe() #get descriptive stats
+
+agg_data = common_df.groupby('job').agg({'orders': 'sum', 'spent': 'mean'})  #group by job and calc total sales and avg order value
+
+total_sales = common_df['spent'].sum() #calc total sales
+
+average_order_value = common_df['spent'].mean() #avg order value
+
+product_distribution = common_df['job'].value_counts()     # calculate product category distribution
+
+# print(desc_stats)
+# print(agg_data.sort_values(by="spent"))
+# print(product_distribution)
+
+# Create a bar plot to represent sales by product category
+sns.barplot(x='job', y='spent', data=common_df)
+plt.title('Sales by Product Category')
+plt.xlabel('Product Category')
+plt.ylabel('Total Sales')
+plt.xticks(rotation=90)
+plt.show()
+
+# Create a pie chart to represent the distribution of product categories
+product_distribution = common_df['job'].value_counts()
+plt.pie(product_distribution, labels=product_distribution.index, autopct='%1.1f%%', startangle=140)
+plt.title('job Category Distribution')
+plt.xticks(rotation=90)
+plt.show()
+
+# Create a box plot to visualize the distribution of order values
+sns.boxplot(x='job', y='spent', data=common_df)
+plt.title('Order Value Distribution by Job')
+plt.xlabel('Job')
+plt.ylabel('Order Value')
+plt.xticks(rotation=90)
+plt.show()
+
+

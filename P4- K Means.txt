@@ -1,0 +1,53 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+
+data = pd.read_csv("iris.csv") 
+data.head()
+data.describe()
+data.info()
+data.shape
+
+X = data.drop(['Species'], axis=1)  
+
+# Standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Elbow Method to determine optimal number of clusters
+inertia = []
+K = range(1, 11)  # Trying 1 to 10 clusters
+
+for k in K:
+    kmeans = KMeans(n_clusters=k, random_state=1)
+    kmeans.fit(X_scaled)
+    inertia.append(kmeans.inertia_)
+
+# Plotting the elbow graph
+plt.figure(figsize=(10, 6))
+plt.plot(K, inertia, marker='o')
+plt.xlabel('Number of Clusters')
+plt.ylabel('Inertia')
+plt.title('Elbow Method For Optimal k')
+plt.show()
+
+# Applying K-Means with the chosen number of clusters
+optimal_k = 3  # Based on the elbow method
+kmeans = KMeans(n_clusters=optimal_k, random_state=1)
+clusters = kmeans.fit_predict(X_scaled)
+
+
+# Add the cluster labels to the original data and display
+data['Cluster'] = clusters
+print(data.head())
+
+# Visualize the clusters with species labels
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x=X_scaled[:, 0], y=X_scaled[:, 1], hue=data['Species'], palette='viridis', marker='o')
+plt.xlabel('Feature 1')
+plt.ylabel('Feature 2')
+plt.title('K-Means Clustering of Iris Dataset with True Labels')
+plt.legend(title='Species')  # Add legend title for clarity
+plt.show()

@@ -1,0 +1,79 @@
+import requests
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+# Enter your API key here
+api_key = "df837aa630d5e466aa4bf2e60f385116"
+
+# base_url variable to store the API URL
+base_url = "http://api.openweathermap.org/data/2.5/forecast?"
+
+# Get city name from the user
+city_name = input("Enter city name: ")
+
+# Complete URL to fetch the 5-day weather forecast
+complete_url = base_url + "q=" + city_name + "&appid=" + api_key
+
+# Send an API request to retrieve the 5-day forecast
+response = requests.get(complete_url)
+
+
+
+# Check if the request was successful (status code 200)
+if response.status_code == 200:
+    # Parse the JSON response
+    data = response.json()
+
+    # Extract temperature and humidity data from the forecast
+    temperatures = [item['main']['temp'] for item in data['list']]
+    humidities = [item['main']['humidity'] for item in data['list']]
+   
+    # Create a DataFrame to store the data
+    weather_data = pd.DataFrame({'Temperature (Kelvin)': temperatures, 'Humidity (%)': humidities})
+
+    # Calculate average, maximum, and minimum temperature and humidity
+    average_temperature = sum(temperatures) / len(temperatures)
+    max_temperature = max(temperatures)
+    min_temperature = min(temperatures)
+    average_humidity = sum(humidities) / len(humidities)
+    max_humidity = max(humidities)
+    min_humidity = min(humidities)
+
+    # Print weather statistics
+    print("Average Temperature: {:.2f} Kelvin".format(average_temperature))
+    print("Maximum Temperature: {:.2f} Kelvin".format(max_temperature))
+    print("Minimum Temperature: {:.2f} Kelvin".format(min_temperature))
+    print("Average Humidity: {:.2f}%".format(average_humidity))
+    print("Maximum Humidity: {:.2f}%".format(max_humidity))
+    print("Minimum Humidity: {:.2f}%".format(min_humidity))
+
+    # Plot temperature
+    plt.figure(figsize=(12, 6))
+    plt.subplot(2, 1, 1)
+    plt.plot(weather_data['Temperature (Kelvin)'], label='Temperature (Kelvin)', color='red')
+    plt.xlabel('Time (3-hour intervals)')
+    plt.ylabel('Temperature (Kelvin)')
+    plt.title('Temperature Forecast')
+    plt.grid()
+
+    # Plot humidity
+    plt.subplot(2, 1, 2)
+    plt.plot(weather_data['Humidity (%)'], label='Humidity (%)', color='blue')
+    plt.xlabel('Time (3-hour intervals)')
+    plt.ylabel('Humidity (%)')
+    plt.title('Humidity Forecast')
+    plt.grid()
+
+    plt.tight_layout()
+
+    # Create a correlation heatmap
+    correlation_matrix = weather_data.corr()
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm')
+    plt.title('Correlation Heatmap')
+
+    plt.show()
+
+else:
+    print("City Not Found or API Request Failed")

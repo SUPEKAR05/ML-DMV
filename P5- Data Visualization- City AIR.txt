@@ -1,0 +1,109 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+aqi = pd.read_csv('City_Air_Quality.csv',encoding = "ISO-8859-1")
+
+aqi['date'] = pd.to_datetime(aqi['date'])
+aqi.describe()
+
+num_cols = ['so2', 'no2', 'rspm', 'spm', 'pm2_5']
+
+for col in num_cols:
+    aqi[col].fillna(aqi[col].mean(),inplace=True)
+
+
+aqi.isna().sum()
+
+aqi['year'] = aqi['date'].dt.year
+
+aqi.head()
+
+
+
+no2= aqi.groupby('year').aggregate({'no2':'mean'})
+so2= aqi.groupby('year').aggregate({'so2':'mean'})
+pm10= aqi.groupby('year').aggregate({'rspm':'mean'})
+spm= aqi.groupby('year').aggregate({'spm':'mean'})
+pm2_5= aqi.groupby('year').aggregate({'pm2_5':'mean'})
+
+
+
+plt.figure(figsize=(10, 6))
+plt.plot(pm2_5, label='PM2.5', color='blue')
+plt.plot(pm10, label='PM10', color='green')
+plt.title('AQI Trend Over Time')
+plt.xlabel('Date')
+plt.ylabel('Pollutant Levels')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+# PM2.5
+plt.figure(figsize=(5,4))
+plt.plot(pm2_5, label='PM2.5', color='blue')
+plt.title('PM2.5 Levels Over Time')
+plt.xlabel('Date')
+plt.ylabel('PM2.5 (µg/m³)')
+plt.grid(True)
+plt.show()
+
+# PM10
+plt.figure(figsize=(5,4))
+plt.plot(pm10, label='PM10', color='green')
+plt.title('PM10 Levels Over Time')
+plt.xlabel('Date')
+plt.ylabel('PM10 (µg/m³)')
+plt.grid(True)
+plt.show()
+
+# SO2
+plt.figure(figsize=(5,4))
+plt.plot(so2, label='SO2', color='red')
+plt.title('SO2 Levels Over Time')
+plt.xlabel('Date')
+plt.ylabel('SO2 (µg/m³)')
+plt.grid(True)
+plt.show()
+
+
+
+# NO2
+plt.figure(figsize=(5,4))
+plt.plot(no2, label='NO2', color='orange')
+plt.title('NO2 Levels Over Time')
+plt.xlabel('Date')
+plt.ylabel('NO2 (µg/m³)')
+plt.grid(True)
+plt.show()
+
+
+
+plt.figure(figsize=(10, 5))
+plt.bar(spm.index,spm.values.ravel(),color='purple')
+plt.title('Average spm Levels on Different Dates')
+plt.xlabel('Date')
+plt.ylabel('Average spm (µg/m³)')
+plt.xticks(rotation=90)
+plt.show()
+
+
+plt.figure(figsize=(10, 5))
+plt.bar(no2.index,no2.values.ravel(),color='green')
+plt.title('Average NO2 Levels on Different Dates')
+plt.xlabel('Date')
+plt.ylabel('Average NO2 (µg/m³)')
+plt.xticks(rotation=90)
+plt.show()
+
+import seaborn as sns
+sns.boxplot(pm10)
+sns.boxplot(no2)
+
+sns.violinplot(pm10)
+
+plt.scatter(no2.values,so2.values,color='green')
+plt.xlabel('no2')
+plt.ylabel('so2')
+plt.title('no2 vs so2');

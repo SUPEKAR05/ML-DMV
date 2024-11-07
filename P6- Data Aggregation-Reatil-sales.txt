@@ -1,0 +1,83 @@
+
+    
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Load the data from CSV
+data = pd.read_csv("Retail_Sales_Data.csv")
+
+# Explore the structure and content of the data
+print("First five rows of the dataset:")
+print(data.head())
+
+print("\nData information:")
+print(data.info())
+print("\nData description:")
+print(data.describe())
+print("\nColumn names:")
+print(data.columns)
+print("\nMissing values in each column:")
+print(data.isnull().sum())
+
+# Select the relevant columns for aggregation
+# 'State' - region, 'Sales' - sales amount, 'Shop_Category' - product category
+relevant_columns = data[['State', 'Sales', 'Shop_Category']]
+
+# Calculate total sales for each region
+region_sales = data.groupby('State')['Sales'].sum()
+print("\nTotal sales by region:")
+print(region_sales)
+
+# Create a bar plot for total sales by region
+plt.figure(figsize=(10, 6))
+plt.bar(region_sales.index, region_sales.values)
+plt.xlabel('Region')
+plt.ylabel('Total Sales Amount')
+plt.title('Sales Distribution by Region')
+plt.xticks(rotation=45)  # Rotate labels for readability
+plt.show()
+
+# Create a pie chart for sales distribution by region
+plt.figure(figsize=(8, 8))
+plt.pie(region_sales.values, labels=region_sales.index, autopct='%1.1f%%', startangle=140)
+plt.axis('equal')
+plt.title('Sales Distribution by Region')
+plt.show()
+
+# Sort the data by 'Sales' in descending order and get the top-performing region
+top_regions = data.sort_values(by='Sales', ascending=False)
+top_region = top_regions.iloc[0]
+print("\nTop-Performing Region:")
+print("State:", top_region['State'], "- Sales:", top_region['Sales'])
+
+# Calculate total sales for each combination of region and product category
+region_category_sales = data.groupby(['State', 'Shop_Category'])['Sales'].sum()
+print("\nTotal sales by region and product category:")
+print(region_category_sales)
+
+# Pivot the data for a stacked bar plot
+pivot_df = region_category_sales.unstack(level='Shop_Category')
+
+# Create a stacked bar plot for sales by region and product category
+fig, ax = plt.subplots(figsize=(10, 6))
+pivot_df.plot(kind='bar', stacked=True, ax=ax)
+plt.xlabel('Region')
+plt.ylabel('Total Sales Amount')
+plt.title('Sales Amount by Region and Product Category (Stacked Bar Plot)')
+plt.xticks(rotation=45)
+plt.legend(title='Product Category')
+plt.show()
+
+# Create a grouped bar plot for sales by region and product category
+fig, ax = plt.subplots(figsize=(12, 8))
+pivot_df.plot(kind='bar', ax=ax)
+plt.xlabel('Region')
+plt.ylabel('Total Sales Amount')
+plt.title('Sales Amount by Region and Product Category (Grouped Bar Plot)')
+plt.xticks(rotation=45)
+plt.legend(title='Product Category')
+plt.show()
+    
+
+  
